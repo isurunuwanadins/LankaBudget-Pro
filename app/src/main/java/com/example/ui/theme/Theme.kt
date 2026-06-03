@@ -1,30 +1,49 @@
 package com.example.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val CleanColorScheme =
-    lightColorScheme(
-        primary = EmeraldIncome,
-        secondary = ElectricNeeds,
-        tertiary = WarmWants,
-        background = SlateDark,
-        surface = SurfaceDark,
-        onBackground = TextPrimary,
-        onSurface = TextPrimary,
-        surfaceVariant = SurfaceDarkSecondary,
-        outline = GridDividerLabel
-    )
-
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = false, // Enforce our crisp Clean Minimal light style
-    dynamicColor: Boolean = false, // Keep disabled to preserve custom palette
+    themeMode: String = "Auto",
     content: @Composable () -> Unit,
 ) {
+    val isSystemDark = isSystemInDarkTheme()
+    
+    // Apply dynamic colors to our global variables
+    applyThemeColors(themeMode, isSystemDark)
+
+    val activeColorScheme = if (themeMode == "Amoled" || themeMode == "Dark" || (themeMode == "Auto" && isSystemDark)) {
+        darkColorScheme(
+            primary = EmeraldIncome,
+            secondary = ElectricNeeds,
+            tertiary = WarmWants,
+            background = SlateDark,
+            surface = SurfaceDark,
+            onBackground = TextPrimary,
+            onSurface = TextPrimary,
+            surfaceVariant = SurfaceDarkSecondary,
+            outline = GridDividerLabel
+        )
+    } else {
+        lightColorScheme(
+            primary = EmeraldIncome,
+            secondary = ElectricNeeds,
+            tertiary = WarmWants,
+            background = SlateDark,
+            surface = SurfaceDark,
+            onBackground = TextPrimary,
+            onSurface = TextPrimary,
+            surfaceVariant = SurfaceDarkSecondary,
+            outline = GridDividerLabel
+        )
+    }
+
     MaterialTheme(
-        colorScheme = CleanColorScheme,
+        colorScheme = activeColorScheme,
         typography = Typography,
         content = content
     )

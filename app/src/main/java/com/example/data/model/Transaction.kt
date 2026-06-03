@@ -11,5 +11,6 @@ data class Transaction(
     val isIncome: Boolean,
     val bucket: String, // "NEEDS", "WANTS", "SAVINGS" for expenses; "INCOME" for income
     val category: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val subTransactionsStr: String? = ""
 )

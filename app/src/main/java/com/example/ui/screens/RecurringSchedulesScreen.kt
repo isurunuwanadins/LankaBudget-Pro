@@ -45,7 +45,8 @@ fun formatTimestamp(timestamp: Long): String {
 @Composable
 fun RecurringSchedulesScreen(
     viewModel: LankaBudgetViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hideHeader: Boolean = false
 ) {
     val recurringSchedules by viewModel.recurringTransactions.collectAsState()
     var showAddScheduleDialog by remember { mutableStateOf(false) }
@@ -63,69 +64,71 @@ fun RecurringSchedulesScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             // Screen Header (floating liquid-glass panel)
-            Box(
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 4.dp)
-                    .fillMaxWidth()
-                    .liquidGlassCard(cornerRadius = 24.dp, containerColor = Color.White.copy(alpha = 0.55f))
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            if (!hideHeader) {
+                Box(
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 4.dp)
+                        .fillMaxWidth()
+                        .liquidGlassCard(cornerRadius = 24.dp, containerColor = Color.White.copy(alpha = 0.55f))
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(HeaderPillBg),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = null,
-                                tint = ElectricNeeds,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(HeaderPillBg),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    tint = ElectricNeeds,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Auto-Schedules",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = (-0.5).sp,
+                                        fontSize = 18.sp
+                                    ),
+                                    color = TextPrimary
+                                )
+                                Text(
+                                    text = "Periodic ledger automation rules",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextSecondary
+                                )
+                            }
                         }
-                        Column {
-                            Text(
-                                text = "Auto-Schedules",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = (-0.5).sp,
-                                    fontSize = 18.sp
-                                ),
-                                color = TextPrimary
-                            )
-                            Text(
-                                text = "Periodic ledger automation rules",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = TextSecondary
-                            )
-                        }
-                    }
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Button(
-                            onClick = { showAddScheduleDialog = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = ElectricNeeds),
-                            shape = CircleShape,
-                            modifier = Modifier
-                                .height(36.dp)
-                                .testTag("add_schedule_button")
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("New Rules", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Button(
+                                onClick = { showAddScheduleDialog = true },
+                                colors = ButtonDefaults.buttonColors(containerColor = ElectricNeeds),
+                                shape = CircleShape,
+                                modifier = Modifier
+                                    .height(36.dp)
+                                    .testTag("add_schedule_button")
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("New Rules", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
@@ -136,7 +139,12 @@ fun RecurringSchedulesScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
-                    .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 110.dp),
+                    .padding(
+                        start = 14.dp,
+                        end = 14.dp,
+                        top = if (hideHeader) 2.dp else 8.dp,
+                        bottom = 110.dp
+                    ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Main List Card container
@@ -278,15 +286,30 @@ fun RecurringSchedulesScreen(
             }
         }
 
+        if (hideHeader) {
+            FloatingActionButton(
+                onClick = { showAddScheduleDialog = true },
+                containerColor = ElectricNeeds,
+                contentColor = Color.White,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 24.dp, bottom = 190.dp)
+                    .testTag("add_schedule_fab")
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Schedule")
+            }
+        }
+
         // Add Recurring Dialog Popup
         if (showAddScheduleDialog) {
             AddRecurringDialog(
+                viewModel = viewModel,
                 onDismiss = { showAddScheduleDialog = false },
-                onAdd = { title, amount, isIncome, bucket, category, period ->
+                onAdd = { title, amount, isIncome, bucket, category, period, loanId ->
                     if (isIncome) {
                         viewModel.addRecurringIncome(title, amount, category, period, System.currentTimeMillis())
                     } else {
-                        viewModel.addRecurringExpense(title, amount, bucket, category, period, System.currentTimeMillis())
+                        viewModel.addRecurringExpense(title, amount, bucket, category, period, System.currentTimeMillis(), loanId)
                     }
                     showAddScheduleDialog = false
                 }
@@ -295,9 +318,10 @@ fun RecurringSchedulesScreen(
 
         editingSchedule?.let { schedule ->
             AddRecurringDialog(
+                viewModel = viewModel,
                 onDismiss = { editingSchedule = null },
                 editingSchedule = schedule,
-                onAdd = { title, amount, isIncome, bucket, category, period ->
+                onAdd = { title, amount, isIncome, bucket, category, period, loanId ->
                     viewModel.updateRecurringTransaction(
                         schedule.copy(
                             title = title,
@@ -305,7 +329,8 @@ fun RecurringSchedulesScreen(
                             isIncome = isIncome,
                             bucket = bucket,
                             category = category,
-                            recurrencePeriod = period
+                            recurrencePeriod = period,
+                            associatedLoanId = loanId
                         )
                     )
                     editingSchedule = null
@@ -470,15 +495,20 @@ fun RecurringScheduleRow(
 
 @Composable
 fun AddRecurringDialog(
+    viewModel: LankaBudgetViewModel,
     onDismiss: () -> Unit,
-    onAdd: (title: String, amount: Double, isIncome: Boolean, bucket: String, category: String, period: String) -> Unit,
+    onAdd: (title: String, amount: Double, isIncome: Boolean, bucket: String, category: String, period: String, associatedLoanId: Int?) -> Unit,
     editingSchedule: RecurringTransaction? = null
 ) {
+    val loans by viewModel.loans.collectAsState()
+    val activeLoans = remember(loans) { loans.filter { !it.isCleared } }
+
     var title by remember { mutableStateOf(editingSchedule?.title ?: "") }
     var amount by remember { mutableStateOf(editingSchedule?.amount?.toString() ?: "") }
     var isIncome by remember { mutableStateOf(editingSchedule?.isIncome ?: false) }
     var bucket by remember { mutableStateOf(editingSchedule?.bucket ?: "NEEDS") }
     var recurrencePeriod by remember { mutableStateOf(editingSchedule?.recurrencePeriod ?: "MONTHLY") }
+    var associatedLoanId by remember { mutableStateOf(editingSchedule?.associatedLoanId) }
 
     val defaultCategory = if (isIncome) "Salary" else "Bills & Rent"
     var category by remember { mutableStateOf(editingSchedule?.category ?: defaultCategory) }
@@ -702,6 +732,64 @@ fun AddRecurringDialog(
                     }
                 }
 
+                // Link Outstanding P2P Loan Repayments (Only for Expense rules!)
+                if (!isIncome && activeLoans.isNotEmpty()) {
+                    Column {
+                        Text("Connect Outstanding Loan Repayment", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        androidx.compose.foundation.lazy.LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (associatedLoanId == null) ElectricNeedsBg else SurfaceDarkSecondary)
+                                        .border(
+                                            1.dp,
+                                            if (associatedLoanId == null) ElectricNeeds else Color.Transparent,
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable { associatedLoanId = null }
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "None",
+                                        fontSize = 11.sp,
+                                        color = if (associatedLoanId == null) ElectricNeeds else TextPrimary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                            items(activeLoans) { loan ->
+                                val isSelected = associatedLoanId == loan.id
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isSelected) ElectricNeedsBg else SurfaceDarkSecondary)
+                                        .border(
+                                            1.dp,
+                                            if (isSelected) ElectricNeeds else Color.Transparent,
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable { associatedLoanId = loan.id }
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${loan.lenderName} (LKR ${String.format("%,.0f", loan.remainingAmount)})",
+                                        fontSize = 11.sp,
+                                        color = if (isSelected) ElectricNeeds else TextPrimary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
@@ -715,7 +803,7 @@ fun AddRecurringDialog(
                         onClick = {
                             val amt = amount.toDoubleOrNull() ?: 0.0
                             if (title.isNotBlank() && amt > 0) {
-                                onAdd(title, amt, isIncome, bucket, category, recurrencePeriod)
+                                onAdd(title, amt, isIncome, bucket, category, recurrencePeriod, if (isIncome) null else associatedLoanId)
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = ElectricNeeds),

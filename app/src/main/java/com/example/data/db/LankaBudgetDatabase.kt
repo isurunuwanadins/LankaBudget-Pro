@@ -9,10 +9,24 @@ import com.example.data.model.Loan
 import com.example.data.model.RepaymentLog
 import com.example.data.model.RecurringTransaction
 import com.example.data.model.Investment
+import com.example.data.model.BudgetCapEntity
+import com.example.data.model.SplitBillEntity
+import com.example.data.model.Goal
+import com.example.data.model.GoalContribution
 
 @Database(
-    entities = [Transaction::class, Loan::class, RepaymentLog::class, RecurringTransaction::class, Investment::class],
-    version = 3,
+    entities = [
+        Transaction::class, 
+        Loan::class, 
+        RepaymentLog::class, 
+        RecurringTransaction::class, 
+        Investment::class, 
+        BudgetCapEntity::class, 
+        SplitBillEntity::class,
+        Goal::class,
+        GoalContribution::class
+    ],
+    version = 8,
     exportSchema = false
 )
 abstract class LankaBudgetDatabase : RoomDatabase() {
@@ -22,11 +36,14 @@ abstract class LankaBudgetDatabase : RoomDatabase() {
     abstract fun repaymentLogDao(): RepaymentLogDao
     abstract fun recurringTransactionDao(): RecurringTransactionDao
     abstract fun investmentDao(): InvestmentDao
+    abstract fun budgetCapDao(): BudgetCapDao
+    abstract fun splitBillDao(): SplitBillDao
+    abstract fun goalDao(): GoalDao
 
     companion object {
         @Volatile
         private var INSTANCE: LankaBudgetDatabase? = null
-        private val INSTANCES = mutableMapOf<String, LankaBudgetDatabase>()
+        private val INSTANCES = java.util.concurrent.ConcurrentHashMap<String, LankaBudgetDatabase>()
 
         fun getDatabase(context: Context, profileName: String = "Personal"): LankaBudgetDatabase {
             val dbName = if (profileName == "Personal") {

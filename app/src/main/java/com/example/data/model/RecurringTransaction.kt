@@ -13,5 +13,6 @@ data class RecurringTransaction(
     val category: String,
     val recurrencePeriod: String, // "DAILY", "WEEKLY", "MONTHLY", "YEARLY"
     val startDate: Long = System.currentTimeMillis(),
-    val lastGeneratedDate: Long = 0L
+    val lastGeneratedDate: Long = 0L,
+    val associatedLoanId: Int? = null
 )

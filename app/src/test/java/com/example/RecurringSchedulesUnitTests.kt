@@ -42,7 +42,9 @@ class RecurringSchedulesUnitTests {
             loanDao = db.loanDao(),
             repaymentLogDao = db.repaymentLogDao(),
             recurringTransactionDao = recurringDao,
-            investmentDao = db.investmentDao()
+            investmentDao = db.investmentDao(),
+            budgetCapDao = db.budgetCapDao(),
+            splitBillDao = db.splitBillDao()
         )
     }
 

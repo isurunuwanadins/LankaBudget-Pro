@@ -45,7 +45,9 @@ import com.example.ui.viewmodel.LankaBudgetViewModel
 @Composable
 fun DebtLedgerScreen(
     viewModel: LankaBudgetViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    forceSubTab: Int = -1,
+    hideHeaderAndSwitcher: Boolean = false
 ) {
     val loans by viewModel.loans.collectAsState()
     val totalDebtBalance by viewModel.totalDebtBalance.collectAsState()
@@ -53,7 +55,8 @@ fun DebtLedgerScreen(
     val investments by viewModel.investments.collectAsState()
     val totalInvestmentBalance by viewModel.totalInvestmentBalance.collectAsState()
 
-    var activeSubTab by remember { mutableIntStateOf(0) } // 0: Debts, 1: Investments
+    var internalSubTab by remember { mutableIntStateOf(0) } // 0: Debts, 1: Investments
+    val activeSubTab = if (forceSubTab != -1) forceSubTab else internalSubTab
 
     var showAddLoanDialog by remember { mutableStateOf(false) }
     var showAddInvestmentDialog by remember { mutableStateOf(false) }
@@ -70,79 +73,81 @@ fun DebtLedgerScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             // Debt Header (floating liquid-glass panel)
-            Box(
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 4.dp)
-                    .fillMaxWidth()
-                    .liquidGlassCard(cornerRadius = 24.dp, containerColor = Color.White.copy(alpha = 0.55f))
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            if (!hideHeaderAndSwitcher) {
+                Box(
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 4.dp)
+                        .fillMaxWidth()
+                        .liquidGlassCard(cornerRadius = 24.dp, containerColor = Color.White.copy(alpha = 0.55f))
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(HeaderPillBg),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Handshake,
-                                contentDescription = null,
-                                tint = ElectricNeeds,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(HeaderPillBg),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Handshake,
+                                    contentDescription = null,
+                                    tint = ElectricNeeds,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Financial Portfolio",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = (-0.5).sp,
+                                        fontSize = 18.sp
+                                    ),
+                                    color = TextPrimary
+                                )
+                                Text(
+                                    text = "Track your custom peer debts & investments",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextSecondary
+                                )
+                            }
                         }
-                        Column {
-                            Text(
-                                text = "Financial Portfolio",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = (-0.5).sp,
-                                    fontSize = 18.sp
-                                ),
-                                color = TextPrimary
-                            )
-                            Text(
-                                text = "Track your custom peer debts & investments",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = TextSecondary
-                            )
-                        }
-                    }
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                if (activeSubTab == 0) {
-                                    showAddLoanDialog = true
-                                } else {
-                                    showAddInvestmentDialog = true
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = ElectricNeeds),
-                            shape = CircleShape,
-                            modifier = Modifier
-                                .height(36.dp)
-                                .testTag("add_item_button")
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = if (activeSubTab == 0) "Add Debt" else "Add Asset",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Button(
+                                onClick = {
+                                    if (activeSubTab == 0) {
+                                        showAddLoanDialog = true
+                                    } else {
+                                        showAddInvestmentDialog = true
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = ElectricNeeds),
+                                shape = CircleShape,
+                                modifier = Modifier
+                                    .height(36.dp)
+                                    .testTag("add_item_button")
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (activeSubTab == 0) "Add Debt" else "Add Asset",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
@@ -153,46 +158,53 @@ fun DebtLedgerScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
-                    .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 110.dp),
+                    .padding(
+                        start = 14.dp,
+                        end = 14.dp,
+                        top = if (hideHeaderAndSwitcher) 2.dp else 8.dp,
+                        bottom = 110.dp
+                    ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Sub-Tabs Segmented Swapper
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .liquidGlassCard(cornerRadius = 14.dp, containerColor = Color.White.copy(alpha = 0.35f))
-                        .padding(4.dp)
-                ) {
-                    Box(
+                if (!hideHeaderAndSwitcher) {
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (activeSubTab == 0) Color.White.copy(alpha = 0.62f) else Color.Transparent)
-                            .clickable { activeSubTab = 0 }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .liquidGlassCard(cornerRadius = 14.dp, containerColor = Color.White.copy(alpha = 0.35f))
+                            .padding(4.dp)
                     ) {
-                        Text(
-                            text = "Debts & Loans",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                            color = if (activeSubTab == 0) ElectricNeeds else TextSecondary
-                        )
-                    }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (activeSubTab == 0) Color.White.copy(alpha = 0.62f) else Color.Transparent)
+                                .clickable { internalSubTab = 0 }
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Debts & Loans",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = if (activeSubTab == 0) ElectricNeeds else TextSecondary
+                            )
+                        }
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (activeSubTab == 1) Color.White.copy(alpha = 0.62f) else Color.Transparent)
-                            .clickable { activeSubTab = 1 }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Asset Portfolio",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                            color = if (activeSubTab == 1) ElectricNeeds else TextSecondary
-                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (activeSubTab == 1) Color.White.copy(alpha = 0.62f) else Color.Transparent)
+                                .clickable { internalSubTab = 1 }
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Asset Portfolio",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = if (activeSubTab == 1) ElectricNeeds else TextSecondary
+                            )
+                        }
                     }
                 }
 
@@ -445,21 +457,32 @@ fun DebtLedgerScreen(
                                         )
                                     }
 
-                                    Button(
-                                        onClick = { showAddInvestmentDialog = true },
-                                        colors = ButtonDefaults.buttonColors(containerColor = ElectricNeeds),
-                                        shape = CircleShape,
-                                        modifier = Modifier
-                                            .height(40.dp)
-                                            .testTag("add_investment_footer_button")
-                                    ) {
-                                        Text("Add Asset", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                    }
+
                                 }
                             }
                         }
                     }
                 }
+            }
+        }
+
+        if (hideHeaderAndSwitcher) {
+            FloatingActionButton(
+                onClick = {
+                    if (activeSubTab == 0) {
+                        showAddLoanDialog = true
+                    } else {
+                        showAddInvestmentDialog = true
+                    }
+                },
+                containerColor = ElectricNeeds,
+                contentColor = Color.White,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 24.dp, bottom = 190.dp)
+                    .testTag("add_item_fab")
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Item")
             }
         }
 
